@@ -47,6 +47,10 @@ class _ReferralViewState extends State<ReferralView> {
     log(
       'retrieved \ncachedDoctorName $cachedDoctorName \ncachedDoctorPhone $cachedDoctorPhone \ncachedDoctorEmail $cachedDoctorEmail',
     );
+
+    cachedDoctorName.then((value)  => referringDoctorNameController.text = value ?? '');
+    cachedDoctorPhone.then((value) => referringDoctorPhoneController.text = value ?? '');
+    cachedDoctorEmail.then((value) => referringDoctorEmailController.text = value ?? '');
   }
 
   @override
@@ -171,79 +175,52 @@ class _ReferralViewState extends State<ReferralView> {
               padding: const EdgeInsets.all(8.0),
               child: Text('Referring Doctor', style: TextStyle(fontSize: 24)),
             ),
-            FutureBuilder<String?>(
-              future: cachedDoctorName,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+            InputHelper(
+              name: "Name",
+              controller: referringDoctorNameController,
+              hintText: 'Dr. Doctor',
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your name';
                 }
-                return InputHelper(
-                  name: "Name",
-                  controller: referringDoctorNameController,
-                  hintText: 'Dr. Doctor',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your name';
-                    }
-                    return null;
-                  },
-                  initialValue: snapshot.data,
-                );
+                return null;
               },
             ),
-            FutureBuilder<String?>(
-              future: cachedDoctorPhone,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+            InputHelper(
+              name: "Phone Number",
+              controller: referringDoctorPhoneController,
+              type: TextInputType.phone,
+              hintText: 'XXX-XXX-XXXX',
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your number';
                 }
-                return InputHelper(
-                  name: "Phone Number",
-                  controller: referringDoctorPhoneController,
-                  type: TextInputType.phone,
-                  hintText: 'XXX-XXX-XXXX',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your number';
-                    }
-                    if (!PhoneNumber.parse(
-                          value,
-                          destinationCountry: IsoCode.US,
-                        ).isValid() &&
-                        !PhoneNumber.parse(
-                          value,
-                          destinationCountry: IsoCode.CA,
-                        ).isValid()) {
-                      return 'Please enter a valid number';
-                    }
-                    return null;
-                  },
-                  initialValue: snapshot.data,
-                );
+                if (!PhoneNumber.parse(
+                      value,
+                      destinationCountry: IsoCode.US,
+                    ).isValid() &&
+                    !PhoneNumber.parse(
+                      value,
+                      destinationCountry: IsoCode.CA,
+                    ).isValid()) {
+                  return 'Please enter a valid number';
+                }
+                return null;
               },
             ),
-            FutureBuilder<String?>(
-              future: cachedDoctorName,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+            InputHelper(
+              name: "Email",
+              controller: referringDoctorEmailController,
+              type: TextInputType.emailAddress,
+              hintText: 'doctor@gmail.com',
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter your email';
                 }
-                return InputHelper(
-                  name: "Email",
-                  controller: referringDoctorEmailController,
-                  type: TextInputType.emailAddress,
-                  hintText: 'doctor@gmail.com',
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!EmailValidator.validate(value)) {
-                      return 'Please enter a valid email';
-                    }
-                    return null;
-                  },
-                  initialValue: snapshot.data,
-                );
+                if (!EmailValidator.validate(value)) {
+                  return 'Please enter a valid email';
+                }
+                return null;
               },
             ),
             DropdownButtonFormField<String>(
@@ -297,7 +274,6 @@ class _ReferralViewState extends State<ReferralView> {
                             await Future.delayed(Duration(seconds: 1));
                             // int response = await submitForm();
                             // log(response.toString());
-                            
 
                             String info = '';
                             if (response == 200) {

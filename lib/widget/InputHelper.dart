@@ -8,7 +8,6 @@ class InputHelper extends StatelessWidget {
     this.type = TextInputType.text,
     this.hintText,
     this.validator,
-    this.initialValue,
     this.editable = true,
     super.key,
   });
@@ -17,7 +16,6 @@ class InputHelper extends StatelessWidget {
   final TextInputType type;
   final String? hintText;
   final String? Function(String?)? validator;
-  final String? initialValue;
   final bool editable;
 
   @override
@@ -32,7 +30,6 @@ class InputHelper extends StatelessWidget {
       ),
       child: TextFormField(
         autovalidateMode: AutovalidateMode.onUnfocus,
-        initialValue: initialValue,
         enabled: editable,
         readOnly: !editable,
         controller: controller,
