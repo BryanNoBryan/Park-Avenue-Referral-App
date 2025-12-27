@@ -4,7 +4,7 @@ import 'package:referral_app/navigation/MyNavigator.dart';
 import 'package:referral_app/providers/referralFormModel.dart';
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

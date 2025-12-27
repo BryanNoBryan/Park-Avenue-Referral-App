@@ -29,6 +29,10 @@ class _ReferralViewState extends State<ReferralView> {
   late String _consultType = consultTypes[0];
   final commentsController = TextEditingController();
 
+  final patientExpansionTileController = ExpansibleController();
+  final referringDoctorExpansionTileController = ExpansibleController();
+  final consultExpansionTileController = ExpansibleController();
+
   late Future<String?> cachedDoctorName;
   late Future<String?> cachedDoctorPhone;
   late Future<String?> cachedDoctorEmail;
@@ -48,9 +52,15 @@ class _ReferralViewState extends State<ReferralView> {
       'retrieved \ncachedDoctorName $cachedDoctorName \ncachedDoctorPhone $cachedDoctorPhone \ncachedDoctorEmail $cachedDoctorEmail',
     );
 
-    cachedDoctorName.then((value)  => referringDoctorNameController.text = value ?? '');
-    cachedDoctorPhone.then((value) => referringDoctorPhoneController.text = value ?? '');
-    cachedDoctorEmail.then((value) => referringDoctorEmailController.text = value ?? '');
+    cachedDoctorName.then(
+      (value) => referringDoctorNameController.text = value ?? '',
+    );
+    cachedDoctorPhone.then(
+      (value) => referringDoctorPhoneController.text = value ?? '',
+    );
+    cachedDoctorEmail.then(
+      (value) => referringDoctorEmailController.text = value ?? '',
+    );
   }
 
   @override
@@ -62,6 +72,11 @@ class _ReferralViewState extends State<ReferralView> {
     referringDoctorPhoneController.dispose();
     referringDoctorEmailController.dispose();
     commentsController.dispose();
+
+    patientExpansionTileController.dispose();
+    referringDoctorExpansionTileController.dispose();
+    consultExpansionTileController.dispose();
+
     super.dispose();
   }
 
@@ -78,7 +93,7 @@ class _ReferralViewState extends State<ReferralView> {
             children: [
               Container(
                 margin: EdgeInsets.symmetric(vertical: 15),
-                height: 30,
+                height: 42,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -95,7 +110,7 @@ class _ReferralViewState extends State<ReferralView> {
                     Text(
                       'Referral Form',
                       style: TextStyle(
-                        fontSize: 24,
+                        fontSize: 32,
                         fontFamily: 'Montserrat-Medium',
                       ),
                     ),
@@ -111,6 +126,11 @@ class _ReferralViewState extends State<ReferralView> {
   }
 
   Container formWidget() {
+    var outlineInputBorderStyle = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(10),
+      borderSide: const BorderSide(color: Colors.black, width: 1),
+    );
+
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 20),
       child: Form(
@@ -118,131 +138,186 @@ class _ReferralViewState extends State<ReferralView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Patient', style: TextStyle(fontSize: 24)),
+            ExpansionTile(
+              controller: patientExpansionTileController,
+              title: Text('Patient', style: TextStyle(fontSize: 24)),
+              shape: const Border(),
+              collapsedShape: const Border(),
+              initiallyExpanded: true,
+              maintainState: true,
+              children: [
+                InputHelper(
+                  name: "Name",
+                  controller: patientNameController,
+                  hintText: 'John Doe',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      patientExpansionTileController.expand();
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                ),
+                InputHelper(
+                  name: "Phone Number",
+                  controller: patientPhoneController,
+                  type: TextInputType.phone,
+                  hintText: 'XXX-XXX-XXXX',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      patientExpansionTileController.expand();
+                      return 'Please enter your number';
+                    }
+                    if (!PhoneNumber.parse(
+                          value,
+                          destinationCountry: IsoCode.US,
+                        ).isValid() &&
+                        !PhoneNumber.parse(
+                          value,
+                          destinationCountry: IsoCode.CA,
+                        ).isValid()) {
+                      patientExpansionTileController.expand();
+                      return 'Please enter a valid number';
+                    }
+                    log('fine correct number');
+                    return null;
+                  },
+                ),
+                InputHelper(
+                  name: "Email",
+                  controller: patientEmailController,
+                  type: TextInputType.emailAddress,
+                  hintText: 'patient@gmail.com',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      patientExpansionTileController.expand();
+                      return 'Please enter your email';
+                    }
+                    if (!EmailValidator.validate(value)) {
+                      patientExpansionTileController.expand();
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+              ],
             ),
-            InputHelper(
-              name: "Name",
-              controller: patientNameController,
-              hintText: 'John Doe',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
+
+            ExpansionTile(
+              controller: referringDoctorExpansionTileController,
+              title: Text('Referring Doctor', style: TextStyle(fontSize: 24)),
+              shape: const Border(),
+              collapsedShape: const Border(),
+              initiallyExpanded: true,
+              maintainState: true,
+              children: [
+                InputHelper(
+                  name: "Name",
+                  controller: referringDoctorNameController,
+                  hintText: 'Dr. Doctor',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      referringDoctorExpansionTileController.expand();
+                      return 'Please enter your name';
+                    }
+                    return null;
+                  },
+                ),
+                InputHelper(
+                  name: "Phone Number",
+                  controller: referringDoctorPhoneController,
+                  type: TextInputType.phone,
+                  hintText: 'XXX-XXX-XXXX',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      referringDoctorExpansionTileController.expand();
+                      return 'Please enter your number';
+                    }
+                    if (!PhoneNumber.parse(
+                          value,
+                          destinationCountry: IsoCode.US,
+                        ).isValid() &&
+                        !PhoneNumber.parse(
+                          value,
+                          destinationCountry: IsoCode.CA,
+                        ).isValid()) {
+                      referringDoctorExpansionTileController.expand();
+                      return 'Please enter a valid number';
+                    }
+                    return null;
+                  },
+                ),
+                InputHelper(
+                  name: "Email",
+                  controller: referringDoctorEmailController,
+                  type: TextInputType.emailAddress,
+                  hintText: 'doctor@gmail.com',
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      referringDoctorExpansionTileController.expand();
+                      return 'Please enter your email';
+                    }
+                    if (!EmailValidator.validate(value)) {
+                      referringDoctorExpansionTileController.expand();
+                      return 'Please enter a valid email';
+                    }
+                    return null;
+                  },
+                ),
+              ],
             ),
-            InputHelper(
-              name: "Phone Number",
-              controller: patientPhoneController,
-              type: TextInputType.phone,
-              hintText: 'XXX-XXX-XXXX',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your number';
-                }
-                if (!PhoneNumber.parse(
-                      value,
-                      destinationCountry: IsoCode.US,
-                    ).isValid() &&
-                    !PhoneNumber.parse(
-                      value,
-                      destinationCountry: IsoCode.CA,
-                    ).isValid()) {
-                  return 'Please enter a valid number';
-                }
-                log('fine correct number');
-                return null;
-              },
-            ),
-            InputHelper(
-              name: "Email",
-              controller: patientEmailController,
-              type: TextInputType.emailAddress,
-              hintText: 'patient@gmail.com',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!EmailValidator.validate(value)) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Referring Doctor', style: TextStyle(fontSize: 24)),
-            ),
-            InputHelper(
-              name: "Name",
-              controller: referringDoctorNameController,
-              hintText: 'Dr. Doctor',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your name';
-                }
-                return null;
-              },
-            ),
-            InputHelper(
-              name: "Phone Number",
-              controller: referringDoctorPhoneController,
-              type: TextInputType.phone,
-              hintText: 'XXX-XXX-XXXX',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your number';
-                }
-                if (!PhoneNumber.parse(
-                      value,
-                      destinationCountry: IsoCode.US,
-                    ).isValid() &&
-                    !PhoneNumber.parse(
-                      value,
-                      destinationCountry: IsoCode.CA,
-                    ).isValid()) {
-                  return 'Please enter a valid number';
-                }
-                return null;
-              },
-            ),
-            InputHelper(
-              name: "Email",
-              controller: referringDoctorEmailController,
-              type: TextInputType.emailAddress,
-              hintText: 'doctor@gmail.com',
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!EmailValidator.validate(value)) {
-                  return 'Please enter a valid email';
-                }
-                return null;
-              },
-            ),
-            DropdownButtonFormField<String>(
-              items: consultTypes.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              initialValue: _consultType,
-              onChanged: (value) {
-                setState(() {
-                  _consultType = value!;
-                });
-              },
-            ),
-            InputHelper(
-              name: "Comments",
-              controller: commentsController,
-              validator: (value) {
-                return null;
-              },
+            ExpansionTile(
+              controller: consultExpansionTileController,
+              title: Text('Consult', style: TextStyle(fontSize: 24)),
+              shape: const Border(),
+              collapsedShape: const Border(),
+              initiallyExpanded: true,
+              maintainState: true,
+              children: [
+                Container(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: DropdownButtonFormField<String>(
+                    decoration: InputDecoration(
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 25,
+                      ),
+                      border: outlineInputBorderStyle,
+                      enabledBorder: outlineInputBorderStyle,
+                      focusedBorder: outlineInputBorderStyle,
+                      icon: const Icon(Icons.assignment_ind),
+                    ),
+                    items: consultTypes.map<DropdownMenuItem<String>>((
+                      String value,
+                    ) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    initialValue: _consultType,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        consultExpansionTileController.expand();
+                        return 'Please select an option';
+                      }
+                      return null;
+                    },
+                    onChanged: (value) {
+                      setState(() {
+                        _consultType = value!;
+                      });
+                    },
+                  ),
+                ),
+                InputHelper(
+                  name: "Comments",
+                  controller: commentsController,
+                  validator: (value) {
+                    return null;
+                  },
+                ),
+              ],
             ),
             Center(
               child: Container(
@@ -401,7 +476,7 @@ class _ReferralViewState extends State<ReferralView> {
       LocalCache.doctorEmail,
       record.referringDoctorEmail,
     );
-    log('cache success 1: ${set1} 2: ${set2} 3: ${set3}');
+    log('cache success 1: $set1 2: $set2 3: $set3');
     return set1 && set2 && set3; //true if all success
   }
 }
